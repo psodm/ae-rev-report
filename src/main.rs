@@ -1,10 +1,12 @@
 mod data_operations;
-mod executive;
-mod forecast;
+mod db;
+mod models;
 
 use crate::data_operations::DataOperations;
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
+    let repo = db::repositories::forecast_repository::InMemoryForecastRepository::new();
+
     let mut csv_data = data_operations::CsvDataOperations {
         forecast_file_path: "./test_data/Forecast_Dashboard_-_Details.csv".to_string(),
         executive_file_path: "./test_data/Unsaved_24702205.csv".to_string(),
@@ -13,12 +15,19 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     };
     let _ = csv_data.load_data();
 
+    for forecast in &csv_data.forecast_rows {
+        repo.insert(forecast.clone());
+    }
+
+    println!("Forecast Data:");
+    let all_forecasts = repo.find_all();
+
     println!(
         "{:90}{:>15}{:>15}{:>15}{:>15}{:>15}{:>15}",
         "Customer", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26", "Apr 26"
     );
     println!("{}", "-".repeat(180));
-    for forecast in &csv_data.forecast_rows {
+    for forecast in all_forecasts {
         println!(
             "{:90}{:>15.2}{:>15.2}{:>15.2}{:>15.2}{:>15.2}{:>15.2}",
             forecast.project_name,
@@ -39,8 +48,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let executives = csv_data.get_list_of_executives();
     for exec in executives {
         println!("{}", exec);
-        let projects =
-            executive::get_projects_by_executive(exec.clone(), &csv_data.executive_projects);
+        let projects = models::executive::get_projects_by_executive(
+            exec.clone(),
+            &csv_data.executive_projects,
+        );
         for project_id in projects {
             println!("  - {}", project_id);
         }

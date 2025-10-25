@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize, de};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ForecastRow {
     pub sold_to_company: String,
     pub project_manager: String,

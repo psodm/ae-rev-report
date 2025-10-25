@@ -1,3 +1,5 @@
+use super::models::{executive, forecast};
+
 pub trait DataOperations {
     fn load_data(&mut self) -> Result<(), Box<dyn std::error::Error>>;
     fn get_list_of_executives(&self) -> Vec<String>;
@@ -6,8 +8,8 @@ pub trait DataOperations {
 pub struct CsvDataOperations {
     pub forecast_file_path: String,
     pub executive_file_path: String,
-    pub forecast_rows: Vec<super::forecast::ForecastRow>,
-    pub executive_projects: Vec<super::executive::ExecutiveProject>,
+    pub forecast_rows: Vec<forecast::ForecastRow>,
+    pub executive_projects: Vec<executive::ExecutiveProject>,
 }
 
 impl DataOperations for CsvDataOperations {
@@ -24,18 +26,16 @@ impl DataOperations for CsvDataOperations {
         Ok(())
     }
     fn get_list_of_executives(&self) -> Vec<String> {
-        super::executive::get_list_of_executives(&self.executive_projects)
+        executive::get_list_of_executives(&self.executive_projects)
     }
 }
 
-fn read_forecast_data(rdr: &mut csv::Reader<std::fs::File>) -> Vec<super::forecast::ForecastRow> {
+fn read_forecast_data(rdr: &mut csv::Reader<std::fs::File>) -> Vec<forecast::ForecastRow> {
     skip_header(rdr);
     rdr.deserialize().filter_map(|result| result.ok()).collect()
 }
 
-fn read_executive_data(
-    rdr: &mut csv::Reader<std::fs::File>,
-) -> Vec<super::executive::ExecutiveProject> {
+fn read_executive_data(rdr: &mut csv::Reader<std::fs::File>) -> Vec<executive::ExecutiveProject> {
     skip_header(rdr);
     rdr.deserialize().filter_map(|result| result.ok()).collect()
 }
